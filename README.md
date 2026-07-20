@@ -2,7 +2,7 @@
 
 **Repositório prático** que acompanha o artigo *"Nginx ou Load Balancer da AWS? O que aprendi entregando 15+ sistemas em Software House"* — todos os números do artigo podem ser reproduzidos a partir deste código.
 
-📝 Artigo: em breve no [AWS Builder Center](https://builder.aws.com/)
+📝 **Leia o artigo:** [Nginx ou Load Balancer da AWS? O que aprendi entregando 15+ sistemas em Software House](https://builder.aws.com/content/3Gm9On5fdYoVnRUCDQ3JtXNwRsy/nginx-ou-load-balancer-da-aws-o-que-aprendi-entregando-15-sistemas-em-software-house) — AWS Builder Center
 
 ## O que tem aqui
 
