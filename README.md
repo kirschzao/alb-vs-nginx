@@ -1,70 +1,70 @@
-# Nginx or an AWS Load Balancer?
+# Nginx ou um Load Balancer da AWS?
 
-**Hands-on companion repo** for the article *"Nginx or an AWS Load Balancer? What Shipping 15+ Systems at a Software House Taught Me"* — every number in the article can be reproduced from this codebase.
+**Repositório prático** que acompanha o artigo *"Nginx ou Load Balancer da AWS? O que aprendi entregando 15+ sistemas em Software House"* — todos os números do artigo podem ser reproduzidos a partir deste código.
 
-📝 Companion article: coming soon on [AWS Builder Center](https://builder.aws.com/)
+📝 Artigo: em breve no [AWS Builder Center](https://builder.aws.com/)
 
-## What's in here
+## O que tem aqui
 
-Three runnable stacks and a benchmark harness that make the trade-offs concrete:
+Três stacks executáveis e um harness de benchmark que tornam os trade-offs concretos:
 
 ```
 alb-vs-nginx/
-├── app/              # Node.js sample app — port 3000, /health, echoes its hostname
-├── nginx-docker/     # docker-compose: 2 app replicas behind nginx (production-derived config)
-├── terraform-alb/    # VPC + ALB + ECS Fargate (2 tasks) — the managed alternative
-└── benchmark/        # k6-in-Docker load test: direct vs through-nginx proxy overhead
+├── app/              # App de exemplo em Node.js — porta 3000, /health, responde com o hostname
+├── nginx-docker/     # docker-compose: 2 réplicas da app atrás do nginx (config derivada de produção)
+├── terraform-alb/    # VPC + ALB + ECS Fargate (2 tasks) — a alternativa gerenciada
+└── benchmark/        # Teste de carga com k6 via Docker: direto vs através do nginx
 ```
 
-The Nginx config mirrors a real software-house production template (TLS blocks removed for the local demo), extended with the `upstream` block you add when one replica stops being enough — which is exactly the moment the ALB conversation starts.
+A config do Nginx espelha um template real de produção de software house (blocos de TLS removidos para o demo local), estendida com o bloco `upstream` que você adiciona quando uma réplica só deixa de ser suficiente — exatamente o momento em que a conversa sobre o ALB começa.
 
-## Quickstart
+## Início rápido
 
-**1. Nginx load balancing, locally (under a minute):**
+**1. Load balancing com Nginx, local (menos de um minuto):**
 
 ```bash
 cd nginx-docker
 docker compose up -d --build
-curl -s localhost:8080   # run it a few times — watch served_by alternate between replicas
+curl -s localhost:8080   # rode algumas vezes — veja o served_by alternar entre as réplicas
 ```
 
-**2. Measure the proxy overhead (k6 via Docker, no install):**
+**2. Meça o overhead do proxy (k6 via Docker, sem instalar nada):**
 
 ```bash
 cd benchmark
-./run.sh                 # two 60s scenarios: direct vs through nginx
+./run.sh                 # dois cenários de 60s: direto vs através do nginx
 ```
 
-**3. The same app behind a real ALB (optional, needs an AWS account):**
+**3. A mesma app atrás de um ALB de verdade (opcional, precisa de conta AWS):**
 
 ```bash
 cd terraform-alb
 terraform init && terraform plan
-# push app/ to your ECR first — see terraform-alb/README.md
+# suba a imagem de app/ para o seu ECR antes — veja terraform-alb/README.md
 ```
 
-> ⚠️ **Cost warning:** the Terraform stack costs ~$0.05/hour while running (us-east-1). **Run `terraform destroy` when you're done.**
+> ⚠️ **Aviso de custo:** a stack Terraform custa ~$0.05/hora enquanto estiver no ar (us-east-1). **Rode `terraform destroy` quando terminar.**
 
-## Sample results
+## Resultados de exemplo
 
-Benchmark on a local Docker network (k6, 50 VUs, 60s, zero errors — this measures Nginx's proxy overhead, *not* ALB latency; methodology in the article):
+Benchmark em rede Docker local (k6, 50 usuários virtuais, 60s, zero erros — mede o overhead de proxy do Nginx, *não* a latência do ALB; metodologia no artigo):
 
-| Scenario | req/s | p50 | p95 | p99 |
+| Cenário | req/s | p50 | p95 | p99 |
 |---|---|---|---|---|
-| Direct to app | 94,664 | 0.43 ms | 0.91 ms | 1.49 ms |
-| Through Nginx | 58,781 | 0.67 ms | 1.86 ms | 2.91 ms |
+| Direto na app | 94,664 | 0.43 ms | 0.91 ms | 1.49 ms |
+| Através do Nginx | 58,781 | 0.67 ms | 1.86 ms | 2.91 ms |
 
-Monthly cost of HA-equivalent setups (prices confirmed 2026-07-20 via the AWS Pricing API):
+Custo mensal de setups equivalentes em alta disponibilidade (preços confirmados em 2026-07-20 via AWS Pricing API):
 
-| Option (us-east-1) | 100 GB/mo | 1 TB/mo | 5 TB/mo |
+| Opção (us-east-1) | 100 GB/mês | 1 TB/mês | 5 TB/mês |
 |---|---|---|---|
-| ALB (managed) | $17.23 | $24.43 | $56.42 |
-| Nginx on 2x EC2 t3.small | $30.37 | $30.37 | $30.37 |
-| Nginx on ECS Fargate, 2 tasks | $18.02 | $18.02 | $18.02 |
+| ALB (gerenciado) | $17.23 | $24.43 | $56.42 |
+| Nginx em 2x EC2 t3.small | $30.37 | $30.37 | $30.37 |
+| Nginx em ECS Fargate, 2 tasks | $18.02 | $18.02 | $18.02 |
 
-Yes: at low traffic, the managed ALB is *cheaper* than an HA pair of t3.smalls. That finding is what the article is about.
+Sim: com pouco tráfego, o ALB gerenciado sai *mais barato* que um par de t3.small em HA. Essa descoberta é o assunto do artigo.
 
-## Per-stack docs
+## Documentação por stack
 
 | Stack | README |
 |---|---|
@@ -72,13 +72,13 @@ Yes: at low traffic, the managed ALB is *cheaper* than an HA pair of t3.smalls. 
 | AWS ALB + ECS Fargate | [terraform-alb/README.md](terraform-alb/README.md) |
 | Benchmark | [benchmark/README.md](benchmark/README.md) |
 
-## Requirements
+## Requisitos
 
-- **Docker** — for the Nginx stack and the benchmark
-- **Terraform >= 1.5** — optional, only for the ALB stack
-- **An AWS account** — only if you run `terraform apply`
+- **Docker** — para a stack do Nginx e o benchmark
+- **Terraform >= 1.5** — opcional, só para a stack do ALB
+- **Uma conta AWS** — só se você rodar `terraform apply`
 
-## Author
+## Autor
 
-**Bernardo Kirsch** — Cloud Solutions Architect & AWS Student Builder Group Leader (Rio Grande do Sul, Brazil)
+**Bernardo Kirsch** — Cloud Solutions Architect & AWS Student Builder Group Leader (Rio Grande do Sul, Brasil)
 [bekirsch.com](https://bekirsch.com) · [GitHub](https://github.com/kirschzao) · [LinkedIn](https://www.linkedin.com/in/bernardo-kirsch/)
