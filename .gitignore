@@ -1,0 +1,6 @@
+benchmark-raw/
+*.tfstate*
+.terraform/
+.terraform.lock.hcl
+node_modules/
+.DS_Store
